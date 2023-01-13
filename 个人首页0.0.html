@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>首页</title>
+<script src="http://code.jquery.com/jquery-latest.js"></script>
+</head>
+<body>
+<h1>作者 icecreamthickdox</h1>
+<h2>Turbowarp</h2>
+<a target="_blank" href="https://turbowarp.org/">Turbowarp »</a>
+<input type="number" placeholder="请输入代号" id="input">
+<button id="button">跳转</button>
+<script>
+var url="";
+$("#button").click(function(){
+url=$("#input").val();
+window.open( 'https://turbowarp.org/' + url);
+})
+</script>
+<br>
+<a target="_blank" href="https://turbowarp.org/editor">Turbowarp Editor »</a>
+</body>
+<body>
+<h2>Raz</h2>
+<a target="_blank" href="https://www.kidsa-z.com/main/Login">Raz登录 »</a>
+<input type="text" placeholder="请输入等级" id="input1">
+<button id="button1">跳转</button>
+<script>
+var url1="";
+$("#button1").click(function(){
+url1=$("#input1").val();
+window.open( 'https://www.kidsa-z.com/main/ReadingBookRoom#!/collectionId/1?level=' + url1);
+})
+</script>
+<br>
+<h2>Github</h2>
+<a target="_blank" href="https://github.com">Github »</a>
+<br>
+<h3>作者</h3>
+<a target="_blank" href="https://github.com/icecreamthickdox">icecreamthickdox</a>
+</body>
+</html>
