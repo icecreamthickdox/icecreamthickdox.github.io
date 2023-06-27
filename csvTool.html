@@ -15,7 +15,8 @@
     <textarea id="pageConsole" readonly cols="32" rows="12">日志输出</textarea>
 <script>
     var globalActiveTasks = 0;
-    applyCSV.onclick = function(){
+    var outputArray = [];
+    applyCSV.onclick = async function(){
         try{
             document.getElementById("applyCSV").disabled=true;
             var sourceFiles = [];
@@ -26,91 +27,33 @@
             var regTar = "";
             var sourceFile = "";
             var targetFile = "";
-            var souReader = new FileReader();
-            var tarReader = new FileReader();
-            var souData = "";
-            var tarData = "";
             var iSFileName = "";
             var iSFullName = "";
             var iTFileName = "";
             var iTFullName = "";
             var outputArray = [];
-            var tempopArray = [];
             //
-            console.log("SourceFiles:");
-            console.log(sourceFiles);
-            for(var i1 = 0;i1 <= (sourceFiles.length - 1);i1++){
+            for(i1 = 0;i1 <= (sourceFiles[0].length - 1);i1++){
                 iSFullName = sourceFiles[0][i1].name;
                 iSFileName = getFileName(iSFullName);
                 regSou = new RegExp(iSFileName + ".(c|c)(s|S)(v|V)");
-                console.log("SourceFileReg:" + regSou);
-                console.log("SourceFileName:" + iSFullName);
                 //
                 if(regSou.test(iSFullName)){
                     pConsole("⚙已匹配输入文件" + iSFullName + "⚙");
                     sourceFile = sourceFiles[0][i1];
-                    console.log("TargetFiles:");
-                    console.log(targetFiles);
                     regTar = new RegExp(iSFileName + ".(j|J)(s|S)(o|O)(n|N)");
-                    console.log("TargetFileReg:" + regTar);
                     //
-                    for(var i2 = 0;i2 <= (targetFiles.length - 1);i2++){
+                    for(var i2 = 0;i2 <= (targetFiles[0].length - 1);i2++){
                         iTFullName = targetFiles[0][i2].name;
-                        console.log("TargetFileName:" + iTFullName);
                         if(regTar.test(iTFullName)){
-                            pConsole("⚙目标文件检索完毕⚙");
                             pConsole("⚙已匹配目标文件" + iTFullName + "⚙");
                             targetFile = targetFiles[0][i2];
                             //
-                            souReader.readAsText(sourceFile);
+                            generateOpFile(sourceFile,targetFile,document.getElementById("ifB").checked);
                             globalActiveTasks++;
-                            souReader.onload = () => {
-                                souData = souReader.result;
-                                pConsole("⚙CSV读取完毕⚙");
-                                tarReader.readAsText(targetFile);
-                            };
-                            souReader.onabort = () => {
-                                pConsole("⚙CSV读取被意外终止⚙");
-                                document.getElementById("applyCSV").disabled=false;
-                            };
-                            souReader.onerror = () => {
-                                pConsole("⚙CSV读取出现错误⚙");
-                                document.getElementById("applyCSV").disabled=false;
-                            };
-                            //
-                            tarReader.onload = () => {
-                                tarData = tarReader.result;
-                                pConsole("⚙JSON读取完毕⚙");
-                                tempopArray = [];
-                                tempopArray.push(iTFullName);
-                                if(document.getElementById("ifB").checked == true){
-                                    tempopArray.push(beautifyJson(applyTransFromPara(getDataFromPara(souData),tarData)));
-                                }else{
-                                    tempopArray.push(applyTransFromPara(getDataFromPara(souData),tarData));
-                                };
-                                pConsole("⚙已应用翻译于" + iTFullName +"⚙");
-                                outputArray.push(tempopArray);
-                                globalActiveTasks += -1;
-                                pConsole("⚙剩余任务" + globalActiveTasks + "⚙");
-                                if(globalActiveTasks == 0){
-                                    pConsole("⚙全部翻译应用完毕⚙");
-                                    console.log(outputArray);
-                                    opTraData(outputArray);
-                                    document.getElementById("applyCSV").disabled=false;
-                                };
-                            };
-                            tarReader.onabort = () => {
-                                pConsole("⚙JSON读取被意外终止⚙");
-                                document.getElementById("applyCSV").disabled=false;
-                            };
-                            tarReader.onerror = () => {
-                                pConsole("⚙JSON读取出现错误⚙");
-                                document.getElementById("applyCSV").disabled=false;
-                            };
-                            //
-                            pConsole("⚙读取完毕⚙");
+                            pConsole("⚙任务已创建" + iTFullName + "⚙");
                             break
-                        }else if(i2 = (targetFiles.length - 1)){
+                        }else if(i2 == (targetFiles[0].length - 1)){
                             pConsole("⚙目标文件不存在⚙");
                         }else{
                             continue
@@ -121,14 +64,63 @@
                 };
             };
             pConsole("⚙输入文件检索完毕⚙");
+            waitForOutput();
+            pConsole("⚙监听进程已创建,5秒检测一次⚙");
         }catch(err){
             pConsole("⚙出现错误!\n" + err + "\n⚙");
             document.getElementById("applyCSV").disabled=false;
         };
     };
+    async function waitForOutput(){
+        if(globalActiveTasks == 0){
+            opTraData(outputArray);
+            document.getElementById("applyCSV").disabled=false;
+        }else{
+            pConsole("剩余" + globalActiveTasks);
+            setTimeout("waitForOutput()",5000);
+        }
+    };
+    //
+    //主线程
+    //分割线
+    //工具
+    //
+    async function generateOpFile(paratranzfile,targetfile,option){
+        var tempop = [];
+        var souData = await readFile(paratranzfile);
+        var tarData = await readFile(targetfile);
+        tempop.push(targetfile.name);
+        if(option){
+            tempop.push(beautifyJson(applyTransFromPara(getDataFromPara(souData),tarData)));
+        }else{
+            tempop.push(applyTransFromPara(getDataFromPara(souData),tarData));
+        };
+        outputArray.push(tempop);
+        globalActiveTasks += -1;
+    };
     function pConsole(str){
         console.log(str);
         document.getElementById("pageConsole").value += ('\n' + str);
+    };
+    async function readFile(ipfile){
+        return new Promise((resolve,reject) => {
+            var fileReader = new FileReader;
+            fileReader.onload = () =>{
+                resolve(fileReader.result)
+            };
+            fileReader.onerror = () =>{
+              reject("读取出错于" + ipfile.name)
+            };
+            fileReader.onabord = () =>{
+              reject("读取中断于" + ipfile.name)
+            };
+            fileReader.readAsText(ipfile);
+      }).then(res => {
+        pConsole("⚙读取完毕:" + ipfile.name + "⚙");
+        return res
+      }).catch(rej => {
+        pConsole("⚙出现错误!\n" + rej + "\n⚙");
+      })
     };
     //
     //主要功能
