@@ -1,0 +1,49 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset = "utf-8">
+<title>啸工具</title>
+</head>
+<body>
+<br><br>
+输入
+<input type="text" id="inputT"><br>
+正则
+<input type="text" id="cusExp"><br>
+掐头
+<input type="text" id="inputH">
+去尾
+<input type="text" id="inputE"><br>
+<button onClick = "process1()">正它!</button><br>
+输出
+<input type="text" id="outputT"><br>
+<textarea id="pageConsole" readonly cols="32" rows="12">日志输出</textarea>
+
+
+
+
+
+
+<script>
+function pConsole(str){
+    console.log(str);
+    document.getElementById("pageConsole").value += ('\n' + str);
+};
+function process1(){
+    var inputtext = document.getElementById("inputT").value;
+    var exH = document.getElementById("inputH").value;
+    var exE = document.getElementById("inputE").value;
+    var reg1 = new RegExp(document.getElementById("cusExp").value, "g");
+    var temp = [];
+    var output = [];
+    
+    var temp = inputtext.match(reg1);
+    pConsole("项数:" + temp.length);
+    for(i=0;i<temp.length;i++){
+        output.push(temp[i].replace(exH,"").replace(exE,""));
+    };
+    document.getElementById("outputT").value = output.toString();
+};
+</script>
+</body>
+</html>
