@@ -5,62 +5,70 @@
 <title>啸工具</title>
 </head>
 <body>
-<br><br>
-输入
-<input type="text" id="inputT"><br>
-正则
-<input type="text" id="cusExp"><br>
-掐头
-<input type="text" id="inputH">
-去尾
-<input type="text" id="inputE"><br>
-<button onClick = "process1()">正它!</button><br>
-替换<br>将原文对应正则表达式与替换文本错行交替输入，若有换行请用\n表示<br>
-<textarea id="inputA" cols="32" rows="12"></textarea><br>
-<button onClick = "process2()">换它!</button><br>
+<b>正则表达式工具</b>
 <button onClick = "displayExample()">示例</button><br>
+by icecreamthickdox<br>
+输入
+<button onClick = "process1()">正它!</button>
+<br>
+　　 <textarea id="inputT" cols="20" rows="6"></textarea><br>
+正则
+<input type="text" id="cusExp"></textarea><br>
+<div>掐头<br>
+　　 <textarea id="inputH" cols="20" rows="6"></textarea>
+</div>
+<div>去尾<br>
+　　 <textarea id="inputE" cols="20" rows="6"></textarea>
+</div>
+替换
+<button onClick = "process2()">换它!</button><br>
+　　 <textarea id="inputA" cols="32" rows="12"></textarea><br>
+(将原文对应正则表达式与替换文本错行交替输入，若有换行请用\n表示)<br>
 输出<br>
-<textarea id="outputT" readonly cols="32" rows="12"></textarea><br>
-<textarea id="pageConsole" readonly cols="32" rows="12">日志输出</textarea>
-
-
-
-
+　　 <textarea id="outputT" readonly cols="32" rows="12"></textarea><br>
+　　 <textarea id="pageConsole" readonly cols="32" rows="12">日志输出</textarea>
 
 
 <script>
+function pLog(str){
+    console.log(str);
+    document.getElementById("pageConsole").value += ('\n' + str);
+};
+
+String.prototype.matchAndCut = function(re, head, end){
+    var temp = this.match(re);
+    var output = [];
+    for(i=0;i<temp.length;i++){output.push(temp[i].replace(head,"").replace(end,""))};
+    return output
+};
+String.prototype.replaceMultiple = function(res, inputs){
+    var output = this;
+    for(i=0;i<res.length;i++){output = output.replace(res[i], inputs[i])};
+    return output
+};
+String.prototype.splitToArrays = function(key, groupsize, process){
+    var f = process;
+    if(f == null){f = function(str){return str}};
+    var temp = this.split(key);
+    var output = [];
+    for(i=0;i<groupsize;i++){output.push([])};
+    var c = 0;
+    for(i=0;i<temp.length;i++){
+        output[c].push(f(temp[i]));
+        c++;
+        if(c===groupsize){c=0}
+    }
+    return output
+};
+
 var input_text;
 var ex_H;//head
 var ex_E;//end
 var reg_S;//single
 var ex_A;//alternate
 
-RegExp.prototype.execAndCut = function(str, head, end){
-    let temp = this.exec(str);
-    let output;
-    for(i=0;i<temp.length;i++){output.push(temp[i].replace(head,"").replace(end,""))};
-    return(output)
-};
-String.prototype.replaceMultiple = function(regexps, inputs){
-    let output = this;
-    for(i=0;i<regexps.length;i++){output = output.replace(regexps[i], inputs[i])};
-    return output
-};
-String.prototype.splitToArrays = function(key, groupsize){
-    let temp = this.split(key);
-    let output;
-    for(i=0;i<temp.length;i++){
-        for(j=0;j<=groupsize;j++){output[i].push(temp[i]);i++}
-    }
-    return output
-};
 
 
-
-function pConsole(str){
-    console.log(str);
-    document.getElementById("pageConsole").value += ('\n' + str);
-};
 function updateVar(){
     input_text = document.getElementById("inputT").value;//text
     ex_H = document.getElementById("inputH").value;//head
@@ -68,32 +76,35 @@ function updateVar(){
     reg_S = new RegExp(document.getElementById("cusExp").value, "g");//custom
     ex_A = document.getElementById("inputA").value;//alternate
 };
-function process1(){
+function process1(){try{
     updateVar();
     var output = "";
-    temp = reg_S.excuAndCut(input_text, ex_H, ex_E);
-    pConsole("项数:" + temp.length);
+    temp = input_text.matchAndCut(reg_S, ex_H, ex_E);
     for(i=0;i<temp.length;i++){
         output += temp[i] + '\n';
     };
     document.getElementById("outputT").value = output;
-};
-function process2(){
+    pLog("success!")
+}catch(e){pLog(e);document.getElementById("outputT").value = ""}};
+
+function process2(){try{
     updateVar();
-    var temp = ex_A.splitToArray();
+    var f = function(str){return str.replace(/\\n/g, '\n')}
+    var temp = ex_A.splitToArrays('\n', 2, f);
     document.getElementById("outputT").value = input_text.replaceMultiple(temp[0], temp[1]);
-};
+    pLog("success!")
+}catch(e){pLog(e);document.getElementById("outputT").value = ""}};
 
 function displayExample(){
     document.getElementById("inputT").value = "abcabcabcAbcAbcaBcaBcabCabC";
     document.getElementById("inputH").value = "a";
     document.getElementById("inputE").value = "c";
     document.getElementById("cusExp").value = "(a|A)bc";
-    document.getElementById("inputA").value ="bcA\n231\\n000\ncab\n645";
+    document.getElementById("inputA").value ="bcA\n231\\n000\\n\ncab\n645";
 };
 
 
-
+pLog("Script loaded");
 </script>
 </body>
 </html>
