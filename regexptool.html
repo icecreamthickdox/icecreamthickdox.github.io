@@ -15,8 +15,12 @@
 去尾
 <input type="text" id="inputE"><br>
 <button onClick = "process1()">正它!</button><br>
-输出
-<input type="text" id="outputT"><br>
+替换<br>将原文对应正则表达式与替换文本错行交替输入，若有换行请用\n表示<br>
+<textarea id="inputA" cols="32" rows="12"></textarea><br>
+<button onClick = "process2()">换它!</button><br>
+<button onClick = "displayExample()">示例</button><br>
+输出<br>
+<textarea id="outputT" readonly cols="32" rows="12"></textarea><br>
 <textarea id="pageConsole" readonly cols="32" rows="12">日志输出</textarea>
 
 
@@ -25,25 +29,71 @@
 
 
 <script>
+var input_text;
+var ex_H;//head
+var ex_E;//end
+var reg_S;//single
+var ex_A;//alternate
+
+RegExp.prototype.execAndCut = function(str, head, end){
+    let temp = this.exec(str);
+    let output;
+    for(i=0;i<temp.length;i++){output.push(temp[i].replace(head,"").replace(end,""))};
+    return(output)
+};
+String.prototype.replaceMultiple = function(regexps, inputs){
+    let output = this;
+    for(i=0;i<regexps.length;i++){output = output.replace(regexps[i], inputs[i])};
+    return output
+};
+String.prototype.splitToArrays = function(key, groupsize){
+    let temp = this.split(key);
+    let output;
+    for(i=0;i<temp.length;i++){
+        for(j=0;j<=groupsize;j++){output[i].push(temp[i]);i++}
+    }
+    return output
+};
+
+
+
 function pConsole(str){
     console.log(str);
     document.getElementById("pageConsole").value += ('\n' + str);
 };
+function updateVar(){
+    input_text = document.getElementById("inputT").value;//text
+    ex_H = document.getElementById("inputH").value;//head
+    ex_E = document.getElementById("inputE").value;//end
+    reg_S = new RegExp(document.getElementById("cusExp").value, "g");//custom
+    ex_A = document.getElementById("inputA").value;//alternate
+};
 function process1(){
-    var inputtext = document.getElementById("inputT").value;
-    var exH = document.getElementById("inputH").value;
-    var exE = document.getElementById("inputE").value;
-    var reg1 = new RegExp(document.getElementById("cusExp").value, "g");
-    var temp = [];
-    var output = [];
-    
-    var temp = inputtext.match(reg1);
+    updateVar();
+    var output = "";
+    temp = reg_S.excuAndCut(input_text, ex_H, ex_E);
     pConsole("项数:" + temp.length);
     for(i=0;i<temp.length;i++){
-        output.push(temp[i].replace(exH,"").replace(exE,""));
+        output += temp[i] + '\n';
     };
-    document.getElementById("outputT").value = output.toString();
+    document.getElementById("outputT").value = output;
 };
+function process2(){
+    updateVar();
+    var temp = ex_A.splitToArray();
+    document.getElementById("outputT").value = input_text.replaceMultiple(temp[0], temp[1]);
+};
+
+function displayExample(){
+    document.getElementById("inputT").value = "abcabcabcAbcAbcaBcaBcabCabC";
+    document.getElementById("inputH").value = "a";
+    document.getElementById("inputE").value = "c";
+    document.getElementById("cusExp").value = "(a|A)bc";
+    document.getElementById("inputA").value ="bcA\n231\\n000\ncab\n645";
+};
+
+
+
 </script>
 </body>
 </html>
