@@ -6,7 +6,9 @@
 </head>
 <body>
 <b>正则表达式工具</b>
-<button onClick = "displayExample()">示例</button><br>
+<button onClick = "displayExample()">示例</button>
+<button onClick = "displayTool1()">清除常见标点</button>
+<input type="checkbox" id="nowrap">连续输出?<br>
 by icecreamthickdox<br>
 输入
 <button onClick = "process1()">正它!</button>
@@ -61,12 +63,17 @@ String.prototype.splitToArrays = function(key, groupsize, process){
     return output
 };
 
+Array.prototype.toWraplessString = function(){
+    var temp = "";
+    for(i=0;i<this.length;i++){temp += this[i]};
+    return temp
+};
+
 var input_text;
 var ex_H;//head
 var ex_E;//end
 var reg_S;//single
 var ex_A;//alternate
-
 
 
 function updateVar(){
@@ -80,8 +87,11 @@ function process1(){try{
     updateVar();
     var output = "";
     temp = input_text.matchAndCut(reg_S, ex_H, ex_E);
-    for(i=0;i<temp.length;i++){
-        output += temp[i] + '\n';
+    pLog(document.getElementById("nowrap").checked);
+    if(document.getElementById("nowrap").checked){
+        for(i=0;i<temp.length;i++){output += temp[i];}
+    }else{
+        for(i=0;i<temp.length;i++){output += temp[i] + '\n';}
     };
     document.getElementById("outputT").value = output;
     pLog("success!")
@@ -101,6 +111,11 @@ function displayExample(){
     document.getElementById("inputE").value = "c";
     document.getElementById("cusExp").value = "(a|A)bc";
     document.getElementById("inputA").value ="bcA\n231\\n000\\n\ncab\n645";
+};
+
+function displayTool1(){
+    document.getElementById("cusExp").value ="[^ ，,。.？\?；;\"“”_—、《》：:\(\)（）\\n]";
+    //"^( |，|,|。|.|？|?|；|;|\"|“|”|_|—|、|《|》|：|:|\(|\)|（|）|\\n)"
 };
 
 
